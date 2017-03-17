@@ -1,6 +1,6 @@
 FROM ubuntu:16.04
-MAINTAINER Andriy Khavryuchenko <akhavr@khavr.com>
+LABEL maintainer "Andriy Khavryuchenko <akhavr@khavr.com>"
 
 RUN apt-get update -y
-RUN apt-get install -y git python-pip wget pyqt4-dev-tools
+RUN apt-get install -y python-pip pyqt4-dev-tools
 RUN pip install --upgrade pip
