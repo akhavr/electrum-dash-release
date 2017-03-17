@@ -1,0 +1,6 @@
+FROM ubuntu:16.04
+MAINTAINER Andriy Khavryuchenko <akhavr@khavr.com>
+
+RUN apt-get update -y
+RUN apt-get install -y git python-pip wget
+RUN pip install --upgrade pip
