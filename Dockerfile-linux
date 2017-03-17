@@ -4,6 +4,6 @@ MAINTAINER Andriy Khavryuchenko <akhavr@khavr.com>
 RUN apt-get update -y
 RUN apt-get install -y git python-pip wget
 RUN pip install --upgrade pip
-RUN wget https://github.com/megastep/makeself/releases/download/release-2.3.0/makeself-2.3.0.run
-RUN chmod +x makeself-2.3.0.run
-RUN ./makeself-2.3.0.run
+RUN wget -O /root/makeself.run https://github.com/megastep/makeself/releases/download/release-2.3.0/makeself-2.3.0.run
+RUN chmod +x /root/makeself.run
+RUN /root/makeself.run --target /root
