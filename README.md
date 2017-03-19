@@ -22,3 +22,16 @@ Uninstallation:
 ```
 $ pip uninstall -y Electrum-DASH
 ```
+
+## Windows (WINE)
+
+```
+$ ./python-trezor-wine.sh
+$ ./python-x11_hash-wine.sh
+$ docker build -f Dockerfile-wine -t akhavr/electrum-dash-release:Wine .
+$ git clone git@github.com:dashpay/electrum-dash.git
+$ docker run --rm -v $(pwd):/opt \
+    -v $(pwd)/electrum-dash/:/root/.wine/drive_c/electrum \
+    -w /opt/electrum-dash -t akhavr/electrum-dash-release:Wine \
+    /opt/build_wine.sh
+```
