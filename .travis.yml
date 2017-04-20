@@ -1,0 +1,16 @@
+sudo: required
+services:
+- docker
+before_install:
+- docker build -f Dockerfile-linux -t akhavr/electrum-dash-release:Linux .
+- git clone git@github.com:dashpay/electrum-dash.git
+script:
+- docker run --rm -v $(pwd):/opt -w /opt/electrum-dash -t akhavr/electrum-dash-release:Linux /opt/build_linux.sh
+deploy:
+  provider: releases
+  api_key:
+    secure: SQXk7lgMBhI8dlpE5+xj54Tl2VMS0t3TJpJnLEgm0SBeenX3S7vmMKBaWbA1qy8zA4h9LWBXxPgy4FKL+9qLOl5cnyJghwlWxoFplUvN2PcDwtnOKcRjvGawFktKhecXTZPwUFjG8AE32jJqY+Ps+1pEgg44qUI7EoWYcPMmItWYHjeMBFfF7+MdzfHxQR7DykFr3QmDnWaTf6T/ojLE3muHBvOI0fVzhFpb0Pd1uWaG1DNtUL2/ALNFbjLKPMjlNKaozgyxUcNxSyRtFjGDlWuqr89snMDIHexG7J3d/UQtfwFg7l55XpZ/UfHCB8NwR7m7n3QYPqaMnybDIFRp8hxwcBijLsWtXy1AHW4p08hxcbDoz2jU84DtRXI6cT3zrhQeWplwS0+dkRpt7CF5SpEIzDRtabbBC5geR4Q6GFdm97fab6gFwKGJbmfcX1DTRAmpuIA0kqHASAHqI9qY0Een3B0GyeO0Ix5CHjmgVZNwY6mfx3OrDaISb7mTiwYjgeo5FKkOTKcEKYSXU1FXB/yzarvistG+lowQ4VAq/alG6sqO/SoHnQyiEw/13LjTTciWYIarP88xFtGC7/Y81k6jo7jzpnJMLRp9P6YOaJ8U5/DDQOGC2GprbqkCIAkL9NOB2bb8E2D4eYDLB7FWhBjWKbRRx7JmPW+9x6viJ5Y=
+  file: electrum-dash/dist/Electrum-DASH-2.6.4.tar.gz
+  on:
+    repo: akhavr/electrum-dash-release
+    branch: 1-linux-travis
