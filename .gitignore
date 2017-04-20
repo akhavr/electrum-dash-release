@@ -91,3 +91,9 @@ ENV/
 # Electrum repo
 electrum-dash
 *~*
+/.build-trezor.bat
+/.build-trezor.sh
+/.build-x11_hash.sh
+/cython-hidapi/
+/python-trezor/
+/x11_hash/
