@@ -3,8 +3,8 @@ services:
 - docker
 before_install:
 - docker build -f Dockerfile-linux -t akhavr/electrum-dash-release:Linux .
-- git clone git@github.com:dashpay/electrum-dash.git
 script:
+- git clone https://github.com/dashpay/electrum-dash.git
 - docker run --rm -v $(pwd):/opt -w /opt/electrum-dash -t akhavr/electrum-dash-release:Linux /opt/build_linux.sh
 deploy:
   provider: releases
