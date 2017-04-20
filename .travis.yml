@@ -13,4 +13,3 @@ deploy:
   file: electrum-dash/dist/Electrum-DASH-2.6.4.tar.gz
   on:
     repo: akhavr/electrum-dash-release
-    branch: 1-linux-travis
