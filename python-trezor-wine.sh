@@ -1,3 +1,5 @@
+#!/bin/bash
+set -ev
 test -d cython-hidapi || git clone  https://github.com/trezor/cython-hidapi
 (cd cython-hidapi; git pull; git submodule init; git submodule update)
 test -d python-trezor || git clone https://github.com/akhavr/python-trezor
