@@ -6,6 +6,7 @@ RUN apt-get update -y
 RUN apt-get install -y software-properties-common
 RUN add-apt-repository -y ppa:ubuntu-wine/ppa
 RUN apt-get update -y
+RUN echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | debconf-set-selections
 RUN apt-get install -y wine1.8 xvfb wget zip winbind unzip git
 
 RUN wget -O python.msi https://www.python.org/ftp/python/2.7.13/python-2.7.13.msi
