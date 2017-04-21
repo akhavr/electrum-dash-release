@@ -20,4 +20,4 @@ docker run --rm -t --privileged  -v $(pwd):/opt \
        ogrisel/python-winbuilder \
        sh /opt/.build-trezor.sh
 
-(cd python-trezor/dist ; whoami; ls -la; unzip -o trezor-*.win32.zip)
+(cd python-trezor/dist ; unzip -o trezor-*.win32.zip)
