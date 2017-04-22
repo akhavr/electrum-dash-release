@@ -19,3 +19,4 @@ deploy:
     - electrum-dash/dist/electrum-setup.exe
   on:
     repo: akhavr/electrum-dash-release
+    all_branches: true
