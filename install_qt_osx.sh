@@ -1,4 +1,5 @@
 #!/bin/bash
+set -ev
 wget https://download.qt.io/official_releases/qt/4.8/4.8.7/qt-everywhere-opensource-src-4.8.7.tar.gz
 gunzip qt-everywhere-opensource-src-4.8.7.tar.gz
 tar -xf qt-everywhere-opensource-src-4.8.7.tar
@@ -28,4 +29,3 @@ patch -p1 <patchset1.patch
 ./configure -prefix $HOME/virtualenv -release -opensource -confirm-license -nomake examples -nomake demos -qt-zlib -qt-libjpeg -qt-libpng -qt-libmng -qt-libtiff
 make -j2
 make install
-cd ..
