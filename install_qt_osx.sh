@@ -6,7 +6,7 @@ tar -xf qt-everywhere-opensource-src-4.8.7.tar
 cd qt-everywhere-opensource-src-4.8.7
 # Patch is needed as https://codereview.qt-project.org/#/c/157137/
 cat > patchset1.patch << EOF
-x 4aa0668..63b646d 100644 (file)
+index 4aa0668..63b646d 100644 (file)
 a/src/gui/painting/qpaintengine_mac.cpp
 b/src/gui/painting/qpaintengine_mac.cpp
 340,13 +340,7 @@ CGColorSpaceRef QCoreGraphicsPaintEngine::macDisplayColorSpace(const QWidget *wi
