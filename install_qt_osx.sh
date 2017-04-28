@@ -27,11 +27,11 @@ index 4aa0668..63b646d 100644 (file)
 EOF
 patch -p1 <patchset1.patch
 ./configure -prefix $HOME/virtualenv -release -opensource -confirm-license -nomake examples -nomake demos -qt-zlib -qt-libjpeg -qt-libpng -qt-libmng -qt-libtiff
-make -j4 &> /dev/null &
-pid=$!
-while kill -0 $pid 2>/dev/null
-do
-    echo -ne '.'
-    sleep 1
-done
-make install
+# make -j4 &> /dev/null &
+# pid=$!
+# while kill -0 $pid 2>/dev/null
+# do
+#     echo -ne '.'
+#     sleep 1
+# done
+# make install
