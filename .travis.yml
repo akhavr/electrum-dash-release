@@ -12,7 +12,9 @@ before_install:
 script:
   - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then ./make-qt-osx.sh ; fi
   - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then ./make2-qt-osx.sh ; fi
-  - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then cd qt-everywhere-opensource-src-4.8.7 ; make install ; fi
+  # - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then ./make3-qt-osx.sh ; fi
+  # - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then cd qt-everywhere-opensource-src-4.8.7 ; make insta
+  ll ; fi
 deploy:
   provider: releases
   api_key:
