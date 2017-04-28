@@ -1,14 +1,17 @@
 os:
   - osx
 #  - linux
+cache:
+  directories:
+    - qt-everywhere-opensource-src-4.8.7
 sudo: required
 services:
   - docker
 before_install:
   - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then ./before_install-osx.sh ; else ./before_install-linux.sh ; fi
+script:
   - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then cd qt-everywhere-opensource-src-4.8.7; make -j4 ; fi
   - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then cd qt-everywhere-opensource-src-4.8.7; make install; fi
-script:
   - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then ./travis-build-osx.sh ; else ./travis-build-linux.sh ; fi
 deploy:
   provider: releases
