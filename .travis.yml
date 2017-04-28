@@ -10,9 +10,7 @@ services:
 before_install:
   - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then ./before_install-osx.sh ; else ./before_install-linux.sh ; fi
 script:
-  - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then cd qt-everywhere-opensource-src-4.8.7; make -j4 ; fi
-  - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then cd qt-everywhere-opensource-src-4.8.7; make install; fi
-  - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then ./travis-build-osx.sh ; else ./travis-build-linux.sh ; fi
+  - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then cd qt-everywhere-opensource-src-4.8.7; make -j4 sub-tools-bootstrap-make_default-ordered sub-moc-make_default-ordered sub-rcc-make_default-ordered sub-uic-make_default-ordered sub-corelib-make_default-ordered sub-xml-make_default-ordered sub-network-make_default-ordered sub-sql-make_default-ordered sub-testlib-make_default-ordered sub-gui-make_default-ordered sub-qt3support-make_default-ordered ; fi
 deploy:
   provider: releases
   api_key:
