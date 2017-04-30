@@ -7,3 +7,4 @@ do
     echo -ne '.'
     sleep 1
 done
+
