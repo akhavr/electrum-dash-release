@@ -1,8 +1,7 @@
 #!/bin/bash
 set -ev
 wget https://download.qt.io/official_releases/qt/4.8/4.8.7/qt-everywhere-opensource-src-4.8.7.tar.gz
-gunzip qt-everywhere-opensource-src-4.8.7.tar.gz
-tar -xf qt-everywhere-opensource-src-4.8.7.tar
+tar xzf qt-everywhere-opensource-src-4.8.7.tar.gz
 cd qt-everywhere-opensource-src-4.8.7
 # Patch is needed as https://codereview.qt-project.org/#/c/157137/
 cat > patchset1.patch << EOF
