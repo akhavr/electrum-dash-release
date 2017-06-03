@@ -1,20 +1,16 @@
 os:
   - osx
 #  - linux
-cache:
-  directories:
-    - qt-everywhere-opensource-src-4.8.7
 sudo: required
 services:
   - docker
 before_install:
   - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then ./before_install-osx.sh ; else ./before_install-linux.sh ; fi
 script:
-  - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then ./make-qt-osx.sh ; fi
-  - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then ./make2-qt-osx.sh ; fi
-  - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then ./make3-qt-osx.sh ; fi
-  - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then ./make4-qt-osx.sh ; fi
-  # - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then cd qt-everywhere-opensource-src-4.8.7 ; make install ; fi
+  - git clone https://github.com/dashpay/electrum-dash.git
+  - pyrcc4 icons.qrc -o gui/qt/icons_rc.py
+  - python setup.py sdist --format=zip,gztar
+  - pyinstaller -y --clean osx.spec
 deploy:
   provider: releases
   api_key:
