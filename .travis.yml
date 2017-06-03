@@ -8,9 +8,7 @@ before_install:
   - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then ./before_install-osx.sh ; else ./before_install-linux.sh ; fi
 script:
   - git clone https://github.com/dashpay/electrum-dash.git
-  - pyrcc4 icons.qrc -o gui/qt/icons_rc.py
-  - python setup.py sdist --format=zip,gztar
-  - pyinstaller -y --clean osx.spec
+  - ./build_osx.sh
 deploy:
   provider: releases
   api_key:
