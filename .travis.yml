@@ -7,7 +7,7 @@ services:
 before_install:
   - if [[ $TRAVIS_OS_NAME == 'osx' ]]; then ./before_install-osx.sh ; else ./before_install-linux.sh ; fi
 script:
-  - git clone https://github.com/dashpay/electrum-dash.git
+  - git clone https://github.com/akhavr/electrum-dash.git
   - ./build_osx.sh
 deploy:
   provider: releases
