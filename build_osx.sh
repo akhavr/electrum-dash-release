@@ -5,8 +5,6 @@ python setup.py sdist --format=zip,gztar
 mv contrib/osx.spec .
 
 echo -----------------
-find .. -name trezorctl.py
 pwd
-ls ..
-ls 
+find .. -name packages
 pyinstaller -y --clean osx.spec
