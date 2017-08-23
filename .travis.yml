@@ -1,6 +1,7 @@
 os:
   - osx
 #  - linux
+osx_image: xcode9
 sudo: required
 services:
   - docker
