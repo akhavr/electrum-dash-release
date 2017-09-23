@@ -11,4 +11,4 @@ git clone  https://github.com/trezor/cython-hidapi
 git clone https://github.com/akhavr/python-trezor
 (cd python-trezor/ ; sudo python setup.py build install bdist)
 
-sudo pip2 install pyinstaller
+sudo pip2 install pyinstaller==3.2.1
