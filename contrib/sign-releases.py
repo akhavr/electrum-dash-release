@@ -1,5 +1,43 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Sign releases on github
+
+Settings is read from options, then if repo not set, repo is read from
+current dire 'git remote -v' output, filtered by 'origin', then config
+file is read.
+
+If setting is already set then it value does not changes.
+
+Config file can have one repo form or multiple repo form.
+
+In one repo form config settings read from root JSON object.
+Keys are "repo", "keyid", "token", "count" and "sign_drafts",
+which is correspond to program options.
+
+Example:
+
+    {
+        "repo": "value"
+        ...
+    }
+
+In multiple repo form, if root "default_repo" key is set, then code
+try to read "repos" key as list and cycle through it to find suitable
+repo, or if no repo is set before, then "default_repo" is used to match.
+If match found, then that list object is used ad one repo form config.
+
+Example:
+
+    {
+        "default_repo": "value"
+        "repos": [
+            {
+                "repo": "value"
+                ...
+            }
+        ]
+    }
+"""
 
 import os
 import os.path
@@ -36,17 +74,18 @@ SHA_FNAME = 'SHA256SUMS.txt'
 def compare_published_times(a, b):
     """Releases list sorting comparsion function"""
 
-    a_published = a['published_at']
-    b_published = b['published_at']
+    a = a['published_at']
+    b = b['published_at']
 
-    if not a_published:
+    if not a and not b:
+        return 0
+    elif not a:
         return -1
-
-    if not b_published:
+    elif not b:
         return 1
 
-    a = dateutil.parser.parse(a_published)
-    b = dateutil.parser.parse(b_published)
+    a = dateutil.parser.parse(a)
+    b = dateutil.parser.parse(b)
 
     if a > b:
         return -1
@@ -89,7 +128,6 @@ def check_github_repo(remote_name='origin'):
     except:
         remotes = []
     remotes = [r for r in remotes if remote_name in r]
-    remotes = [r for r in remotes if '(push)' in r]
     repo = remotes[0].split()[1] if len(remotes) > 0 else None
 
     if repo:
@@ -97,8 +135,14 @@ def check_github_repo(remote_name='origin'):
             repo = repo.split(':')[-1]
 
         if repo.startswith('http'):
+            if repo.endswith('/'):
+                repo = repo[:-1]
+
             repo = repo.split('/')
             repo = '/'.join(repo[-2:])
+
+        if repo.endswith('.git'):
+            repo = repo[:-4]
 
     return repo
 
@@ -118,21 +162,40 @@ class SignApp(object):
     def __init__(self, **kwargs):
         """Get app settings from options, from curdir git, from config file"""
         ask_passphrase = kwargs.pop('ask_passphrase', None)
+        self.sign_drafts = kwargs.pop('sign_drafts', False)
         self.repo = kwargs.pop('repo', None)
         self.token = kwargs.pop('token', None)
         self.keyid = kwargs.pop('keyid', None)
         self.count = kwargs.pop('count', None)
         self.dry_run = kwargs.pop('dry_run', None)
 
-        repo = check_github_repo()
-        self.repo = self.repo or repo
+        if not self.repo:
+            self.repo = check_github_repo()
 
-        self.config = read_config()
-        self.repo = self.repo or self.config.get('repo', None)
-        self.token = self.token or self.config.get('token', None)
-        self.keyid = self.keyid or self.config.get('keyid', None)
-        self.count = self.count or self.config.get('count', None) \
-                     or SEARCH_COUNT
+        self.config = {}
+        config_data = read_config()
+
+        default_repo = config_data.get('default_repo', None)
+        if default_repo:
+            if not self.repo:
+                self.repo = default_repo
+
+            for config in config_data.get('repos', []):
+                config_repo = config.get('repo', None)
+                if config_repo and config_repo == self.repo:
+                    self.config = config
+                    break
+        else:
+            self.config = config_data
+
+        if self.config:
+            self.repo = self.repo or self.config.get('repo', None)
+            self.token = self.token or self.config.get('token', None)
+            self.keyid = self.keyid or self.config.get('keyid', None)
+            self.count = self.count or self.config.get('count', None) \
+                         or SEARCH_COUNT
+            self.sign_drafts = self.sign_drafts \
+                         or self.config.get('sign_drafts', False)
 
         if not self.repo:
             print 'no repo found, exit'
@@ -145,7 +208,8 @@ class SignApp(object):
             print 'GITHUB_TOKEN environment var not set, exit'
             sys.exit(0)
 
-        self.keyid = self.keyid.split('/')[-1]
+        if self.keyid:
+            self.keyid = self.keyid.split('/')[-1]
 
         self.passphrase = None
         self.gpg = gnupg.GPG()
@@ -229,11 +293,39 @@ class SignApp(object):
         """Search through last 'count' releases with assets without
         .asc counterparts or releases withouth SHA256SUMS.txt.asc
         """
+        print 'Sign releases on repo: %s' % self.repo
+        print '  With key: %s, %s\n' % (self.keyid, self.uid)
         releases = get_releases(self.repo)
+
+        if not self.sign_drafts:
+            releases = [r for r in releases if not r.get('draft', False)]
+
         # cycle through releases sorted by by publication date
         releases.sort(compare_published_times)
         for r in releases[:self.count]:
+            tag_name = r.get('tag_name', 'No tag_name')
+            is_draft = r.get('draft', False)
+            is_prerelease = r.get('prerelease', False)
+            created_at = r.get('created_at', '')
+
+            msg = 'Found %s%s tagged: %s, created at: %s' % (
+                'draft ' if is_draft else '',
+                'prerelease' if is_prerelease else 'release',
+                tag_name,
+                created_at
+            )
+
+            if not is_draft:
+                msg += ', published at: %s' % r.get('published_at', '')
+
+            print msg
+
             asset_names = [a['name'] for a in r['assets']]
+
+            if not asset_names:
+                print '  No assets found, skip release\n'
+                continue
+
             asc_names = [a for a in asset_names if a.endswith('.asc')]
             other_names = [a for a in asset_names if not a.endswith('.asc')]
             need_to_sign = False
@@ -252,12 +344,16 @@ class SignApp(object):
 
             if need_to_sign:
                 self.sign_release(r, other_names, asc_names)
+            else:
+                print '  Seems already signed, skip release\n'
 
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 @click.command(context_settings=CONTEXT_SETTINGS)
 @click.option('-c', '--count', type=int,
               help='Number of last releases to sign')
+@click.option('-d', '--sign-drafts', is_flag=True,
+              help='Sing draft releases')
 @click.option('-k', '--keyid',
               help='gnupg keyid')
 @click.option('-n', '--dry-run', is_flag=True,
