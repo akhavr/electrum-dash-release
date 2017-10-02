@@ -135,12 +135,28 @@ class SignApp(object):
         repo = check_github_repo()
         self.repo = self.repo or repo
 
-        self.config = read_config()
-        self.repo = self.repo or self.config.get('repo', None)
-        self.token = self.token or self.config.get('token', None)
-        self.keyid = self.keyid or self.config.get('keyid', None)
-        self.count = self.count or self.config.get('count', None) \
-                     or SEARCH_COUNT
+        self.config = {}
+        config_data = read_config()
+
+        default_repo = config_data.get('default_repo', None)
+        if default_repo:
+            if not self.repo:
+                self.repo = default_repo
+
+            for config in config_data.get('repos', []):
+                config_repo = config.get('repo', None)
+                if config_repo and config_repo == self.repo:
+                    self.config = config
+                    break
+        else:
+            self.config = config_data
+
+        if self.config:
+            self.repo = self.repo or self.config.get('repo', None)
+            self.token = self.token or self.config.get('token', None)
+            self.keyid = self.keyid or self.config.get('keyid', None)
+            self.count = self.count or self.config.get('count', None) \
+                         or SEARCH_COUNT
 
         if not self.repo:
             print 'no repo found, exit'
