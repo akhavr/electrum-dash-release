@@ -2,20 +2,41 @@
 # -*- coding: utf-8 -*-
 """Sign releases on github
 
-Settings is read from options, repo is read aslo from current dir
-'git remote -v' output, filtered by 'origin', then config file is read.
+Settings is read from options, then if repo not set, repo is read from
+current dire 'git remote -v' output, filtered by 'origin', then config
+file is read.
 
-If setting is set from option, then do not changes when 'git remote -v'
-is read or when config file is read. Config file options is set if no
-other means set it before.
+If setting is already set then it value does not changes.
 
-Config file can have one repo or multiple repos configs in "repos" list.
-If "default_repo" is set, then code try to read "repos" list and cycle
-through it to find suitable repo, or if no repo is set before, then
-"default_repo" is used to match.
+Config file can have one repo form or multiple repo form.
 
-One repo config can contain "repo", "keyid", "token", "count"
-and "sign_drafts" keys, which is correspond to program options.
+In one repo form config settings read from root JSON object.
+Keys are "repo", "keyid", "token", "count" and "sign_drafts",
+which is correspond to program options.
+
+Example:
+
+    {
+        "repo": "value"
+        ...
+    }
+
+In multiple repo form, if root "default_repo" key is set, then code
+try to read "repos" key as list and cycle through it to find suitable
+repo, or if no repo is set before, then "default_repo" is used to match.
+If match found, then that list object is used ad one repo form config.
+
+Example:
+
+    {
+        "default_repo": "value"
+        "repos": [
+            {
+                "repo": "value"
+                ...
+            }
+        ]
+    }
 """
 
 import os
