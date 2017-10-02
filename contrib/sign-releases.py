@@ -125,6 +125,7 @@ class SignApp(object):
     def __init__(self, **kwargs):
         """Get app settings from options, from curdir git, from config file"""
         ask_passphrase = kwargs.pop('ask_passphrase', None)
+        self.sign_drafts = kwargs.pop('sign_drafts', False)
         self.repo = kwargs.pop('repo', None)
         self.token = kwargs.pop('token', None)
         self.keyid = kwargs.pop('keyid', None)
@@ -237,7 +238,12 @@ class SignApp(object):
         """Search through last 'count' releases with assets without
         .asc counterparts or releases withouth SHA256SUMS.txt.asc
         """
+        print 'Sign releases on repo: %s' % self.repo
         releases = get_releases(self.repo)
+
+        if not self.sign_drafts:
+            releases = [r for r in releases if not r.get('draft', False)]
+
         # cycle through releases sorted by by publication date
         releases.sort(compare_published_times)
         for r in releases[:self.count]:
@@ -266,6 +272,8 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 @click.command(context_settings=CONTEXT_SETTINGS)
 @click.option('-c', '--count', type=int,
               help='Number of last releases to sign')
+@click.option('-d', '--sign-drafts', is_flag=True,
+              help='Sing draft releases')
 @click.option('-k', '--keyid',
               help='gnupg keyid')
 @click.option('-n', '--dry-run', is_flag=True,
