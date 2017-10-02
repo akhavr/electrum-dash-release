@@ -169,8 +169,8 @@ class SignApp(object):
         self.count = kwargs.pop('count', None)
         self.dry_run = kwargs.pop('dry_run', None)
 
-        repo = check_github_repo()
-        self.repo = self.repo or repo
+        if not self.repo:
+            self.repo = check_github_repo()
 
         self.config = {}
         config_data = read_config()
