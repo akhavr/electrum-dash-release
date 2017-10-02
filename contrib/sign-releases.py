@@ -248,6 +248,10 @@ class SignApp(object):
         releases.sort(compare_published_times)
         for r in releases[:self.count]:
             asset_names = [a['name'] for a in r['assets']]
+
+            if not asset_names:
+                continue
+
             asc_names = [a for a in asset_names if a.endswith('.asc')]
             other_names = [a for a in asset_names if not a.endswith('.asc')]
             need_to_sign = False
