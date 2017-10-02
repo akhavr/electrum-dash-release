@@ -36,17 +36,18 @@ SHA_FNAME = 'SHA256SUMS.txt'
 def compare_published_times(a, b):
     """Releases list sorting comparsion function"""
 
-    a_published = a['published_at']
-    b_published = b['published_at']
+    a = a['published_at']
+    b = b['published_at']
 
-    if not a_published:
+    if not a and not b:
+        return 0
+    elif not a:
         return -1
-
-    if not b_published:
+    elif not b:
         return 1
 
-    a = dateutil.parser.parse(a_published)
-    b = dateutil.parser.parse(b_published)
+    a = dateutil.parser.parse(a)
+    b = dateutil.parser.parse(b)
 
     if a > b:
         return -1
