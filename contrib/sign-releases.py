@@ -98,8 +98,14 @@ def check_github_repo(remote_name='origin'):
             repo = repo.split(':')[-1]
 
         if repo.startswith('http'):
+            if repo.endswith('/'):
+                repo = repo[:-1]
+
             repo = repo.split('/')
             repo = '/'.join(repo[-2:])
+
+        if repo.endswith('.git'):
+            repo = repo[:-4]
 
     return repo
 
@@ -146,7 +152,8 @@ class SignApp(object):
             print 'GITHUB_TOKEN environment var not set, exit'
             sys.exit(0)
 
-        self.keyid = self.keyid.split('/')[-1]
+        if self.keyid:
+            self.keyid = self.keyid.split('/')[-1]
 
         self.passphrase = None
         self.gpg = gnupg.GPG()
