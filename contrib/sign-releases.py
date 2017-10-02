@@ -239,6 +239,7 @@ class SignApp(object):
         .asc counterparts or releases withouth SHA256SUMS.txt.asc
         """
         print 'Sign releases on repo: %s' % self.repo
+        print '  With key: %s, %s\n' % (self.keyid, self.uid)
         releases = get_releases(self.repo)
 
         if not self.sign_drafts:
@@ -247,9 +248,27 @@ class SignApp(object):
         # cycle through releases sorted by by publication date
         releases.sort(compare_published_times)
         for r in releases[:self.count]:
+            tag_name = r.get('tag_name', 'No tag_name')
+            is_draft = r.get('draft', False)
+            is_prerelease = r.get('prerelease', False)
+            created_at = r.get('created_at', '')
+
+            msg = 'Sign %s%s tagged: %s, created at: %s' % (
+                'draft ' if is_draft else '',
+                'prerelease' if is_prerelease else 'release',
+                tag_name,
+                created_at
+            )
+
+            if not is_draft:
+                msg += ', published at: %s' % r.get('published_at', '')
+
+            print msg
+
             asset_names = [a['name'] for a in r['assets']]
 
             if not asset_names:
+                print '  No assets found, skip release\n'
                 continue
 
             asc_names = [a for a in asset_names if a.endswith('.asc')]
@@ -270,6 +289,8 @@ class SignApp(object):
 
             if need_to_sign:
                 self.sign_release(r, other_names, asc_names)
+            else:
+                print '  Seems already signed, skip release\n'
 
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
