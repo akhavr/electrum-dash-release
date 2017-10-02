@@ -1,5 +1,22 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Sign releases on github
+
+Settings is read from options, repo is read aslo from current dir
+'git remote -v' output, filtered by 'origin', then config file is read.
+
+If setting is set from option, then do not changes when 'git remote -v'
+is read or when config file is read. Config file options is set if no
+other means set it before.
+
+Config file can have one repo or multiple repos configs in "repos" list.
+If "default_repo" is set, then code try to read "repos" list and cycle
+through it to find suitable repo, or if no repo is set before, then
+"default_repo" is used to match.
+
+One repo config can contain "repo", "keyid", "token", "count"
+and "sign_drafts" keys, which is correspond to program options.
+"""
 
 import os
 import os.path
@@ -90,7 +107,6 @@ def check_github_repo(remote_name='origin'):
     except:
         remotes = []
     remotes = [r for r in remotes if remote_name in r]
-    remotes = [r for r in remotes if '(push)' in r]
     repo = remotes[0].split()[1] if len(remotes) > 0 else None
 
     if repo:
@@ -157,6 +173,8 @@ class SignApp(object):
             self.keyid = self.keyid or self.config.get('keyid', None)
             self.count = self.count or self.config.get('count', None) \
                          or SEARCH_COUNT
+            self.sign_drafts = self.sign_drafts \
+                         or self.config.get('sign_drafts', False)
 
         if not self.repo:
             print 'no repo found, exit'
@@ -269,7 +287,7 @@ class SignApp(object):
             is_prerelease = r.get('prerelease', False)
             created_at = r.get('created_at', '')
 
-            msg = 'Sign %s%s tagged: %s, created at: %s' % (
+            msg = 'Found %s%s tagged: %s, created at: %s' % (
                 'draft ' if is_draft else '',
                 'prerelease' if is_prerelease else 'release',
                 tag_name,
