@@ -214,16 +214,16 @@ class SignApp(object):
         self.passphrase = None
         self.gpg = gnupg.GPG()
 
-        for k in self.gpg.list_keys(True):
-            if not self.keyid:
-                self.keyid = k.get('keyid', None)
-            if self.keyid and self.keyid in k.get('keyid', ''):
-                self.uid = ', '.join(k.get('uids', ['No uid found']))
-                break
-
         if not self.keyid:
-            print 'no key found, exit'
+            print 'no keyid set, exit'
             sys.exit(0)
+
+        keylist = self.gpg.list_keys(True, keys=[self.keyid])
+        if not keylist:
+            print 'no key with keyid %s found, exit' % self.keyid
+            sys.exit(0)
+
+        self.uid = ', '.join(keylist[0].get('uids', ['No uid found']))
 
         if ask_passphrase:
             while not self.passphrase:
@@ -246,7 +246,7 @@ class SignApp(object):
         """Try to sign test string, and if some data signed retun True"""
         signed_data = self.gpg.sign('test message to check passphrase',
                          keyid=self.keyid, passphrase=passphrase)
-        if signed_data.data:
+        if signed_data.data and self.gpg.verify(signed_data.data).valid:
             return True
         print '%sWrong passphrase!%s' % (Fore.RED, Style.RESET_ALL)
         return False
