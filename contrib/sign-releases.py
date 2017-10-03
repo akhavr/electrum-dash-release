@@ -199,14 +199,14 @@ class SignApp(object):
 
         if not self.repo:
             print 'no repo found, exit'
-            sys.exit(0)
+            sys.exit(1)
 
         if self.token:
             os.environ['GITHUB_TOKEN'] = self.token
 
         if not os.environ.get('GITHUB_TOKEN', None):
             print 'GITHUB_TOKEN environment var not set, exit'
-            sys.exit(0)
+            sys.exit(1)
 
         if self.keyid:
             self.keyid = self.keyid.split('/')[-1]
@@ -214,16 +214,16 @@ class SignApp(object):
         self.passphrase = None
         self.gpg = gnupg.GPG()
 
-        for k in self.gpg.list_keys(True):
-            if not self.keyid:
-                self.keyid = k.get('keyid', None)
-            if self.keyid and self.keyid in k.get('keyid', ''):
-                self.uid = ', '.join(k.get('uids', ['No uid found']))
-                break
-
         if not self.keyid:
-            print 'no key found, exit'
-            sys.exit(0)
+            print 'no keyid set, exit'
+            sys.exit(1)
+
+        keylist = self.gpg.list_keys(True, keys=[self.keyid])
+        if not keylist:
+            print 'no key with keyid %s found, exit' % self.keyid
+            sys.exit(1)
+
+        self.uid = ', '.join(keylist[0].get('uids', ['No uid found']))
 
         if ask_passphrase:
             while not self.passphrase:
@@ -246,7 +246,7 @@ class SignApp(object):
         """Try to sign test string, and if some data signed retun True"""
         signed_data = self.gpg.sign('test message to check passphrase',
                          keyid=self.keyid, passphrase=passphrase)
-        if signed_data.data:
+        if signed_data.data and self.gpg.verify(signed_data.data).valid:
             return True
         print '%sWrong passphrase!%s' % (Fore.RED, Style.RESET_ALL)
         return False
@@ -258,7 +258,7 @@ class SignApp(object):
                                              keyid=self.keyid,
                                              passphrase=self.passphrase,
                                              detach=detach)
-            with open('%s.asc' %name, 'w') as fdw:
+            with open('%s.asc' % name, 'w') as fdw:
                 fdw.write(signed_data.data)
 
     def sign_release(self, release, other_names, asc_names):
@@ -278,7 +278,7 @@ class SignApp(object):
                     gh_asset_download(repo, tag, name)
                     if not '%s.asc' % name in asc_names:
                         self.sign_file_name(name)
-                        gh_asset_upload(repo, tag, '%s.asc' %name,
+                        gh_asset_upload(repo, tag, '%s.asc' % name,
                                         dry_run=self.dry_run)
 
                     sumline = '%s %s\n' % (sha256_checksum(name), name)
