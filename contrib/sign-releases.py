@@ -199,14 +199,14 @@ class SignApp(object):
 
         if not self.repo:
             print 'no repo found, exit'
-            sys.exit(0)
+            sys.exit(1)
 
         if self.token:
             os.environ['GITHUB_TOKEN'] = self.token
 
         if not os.environ.get('GITHUB_TOKEN', None):
             print 'GITHUB_TOKEN environment var not set, exit'
-            sys.exit(0)
+            sys.exit(1)
 
         if self.keyid:
             self.keyid = self.keyid.split('/')[-1]
@@ -216,12 +216,12 @@ class SignApp(object):
 
         if not self.keyid:
             print 'no keyid set, exit'
-            sys.exit(0)
+            sys.exit(1)
 
         keylist = self.gpg.list_keys(True, keys=[self.keyid])
         if not keylist:
             print 'no key with keyid %s found, exit' % self.keyid
-            sys.exit(0)
+            sys.exit(1)
 
         self.uid = ', '.join(keylist[0].get('uids', ['No uid found']))
 
