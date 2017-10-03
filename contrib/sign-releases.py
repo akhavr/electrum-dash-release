@@ -258,7 +258,7 @@ class SignApp(object):
                                              keyid=self.keyid,
                                              passphrase=self.passphrase,
                                              detach=detach)
-            with open('%s.asc' %name, 'w') as fdw:
+            with open('%s.asc' % name, 'w') as fdw:
                 fdw.write(signed_data.data)
 
     def sign_release(self, release, other_names, asc_names):
@@ -278,7 +278,7 @@ class SignApp(object):
                     gh_asset_download(repo, tag, name)
                     if not '%s.asc' % name in asc_names:
                         self.sign_file_name(name)
-                        gh_asset_upload(repo, tag, '%s.asc' %name,
+                        gh_asset_upload(repo, tag, '%s.asc' % name,
                                         dry_run=self.dry_run)
 
                     sumline = '%s %s\n' % (sha256_checksum(name), name)
