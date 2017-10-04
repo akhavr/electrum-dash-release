@@ -48,7 +48,7 @@ import shutil
 import hashlib
 import tempfile
 import json
-from subprocess import check_output
+from subprocess import check_output, CalledProcessError
 
 try:
     import click
@@ -59,8 +59,8 @@ try:
     from github_release import get_releases, gh_asset_download, gh_asset_upload
 except ImportError, e:
     print 'Import error:', e
-    print 'To run script install required packages with the next command:\n\n' \
-          'pip install githubrelease python-gnupg pyOpenSSL cryptography idna' \
+    print 'To run script install required packages with the next command:\n\n'\
+          'pip install githubrelease python-gnupg pyOpenSSL cryptography idna'\
           ' certifi python-dateutil click colorama'
     sys.exit(1)
 
@@ -125,7 +125,7 @@ def check_github_repo(remote_name='origin'):
         remotes = check_output(['git', 'remote', '-v'],
                                stderr=open(os.devnull, 'w'))
         remotes = remotes.splitlines()
-    except:
+    except CalledProcessError:
         remotes = []
     remotes = [r for r in remotes if remote_name in r]
     repo = remotes[0].split()[1] if len(remotes) > 0 else None
@@ -193,9 +193,9 @@ class SignApp(object):
             self.token = self.token or self.config.get('token', None)
             self.keyid = self.keyid or self.config.get('keyid', None)
             self.count = self.count or self.config.get('count', None) \
-                         or SEARCH_COUNT
+                or SEARCH_COUNT
             self.sign_drafts = self.sign_drafts \
-                         or self.config.get('sign_drafts', False)
+                or self.config.get('sign_drafts', False)
 
         if not self.repo:
             print 'no repo found, exit'
@@ -236,16 +236,16 @@ class SignApp(object):
         """Read passphrase for gpg key until check_key is passed"""
         passphrase = getpass.getpass('%sInput passphrase for Key: %s %s:%s ' %
                                      (Fore.GREEN,
-                                     self.keyid,
-                                     self.uid,
-                                     Style.RESET_ALL))
+                                      self.keyid,
+                                      self.uid,
+                                      Style.RESET_ALL))
         if self.check_key(passphrase):
             self.passphrase = passphrase
 
     def check_key(self, passphrase=None):
         """Try to sign test string, and if some data signed retun True"""
         signed_data = self.gpg.sign('test message to check passphrase',
-                         keyid=self.keyid, passphrase=passphrase)
+                                    keyid=self.keyid, passphrase=passphrase)
         if signed_data.data and self.gpg.verify(signed_data.data).valid:
             return True
         print '%sWrong passphrase!%s' % (Fore.RED, Style.RESET_ALL)
@@ -269,7 +269,7 @@ class SignApp(object):
         repo = self.repo
         tag = release['tag_name']
 
-        with ChdirTemporaryDirectory() as tmpdir:
+        with ChdirTemporaryDirectory():
             with open(SHA_FNAME, 'w') as fdw:
                 for name in other_names:
                     if name == SHA_FNAME:
@@ -349,11 +349,13 @@ class SignApp(object):
 
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
+
+
 @click.command(context_settings=CONTEXT_SETTINGS)
 @click.option('-c', '--count', type=int,
-              help='Number of last releases to sign')
+              help='Number of recently published releases to sign')
 @click.option('-d', '--sign-drafts', is_flag=True,
-              help='Sing draft releases')
+              help='Sing draft releases first')
 @click.option('-k', '--keyid',
               help='gnupg keyid')
 @click.option('-n', '--dry-run', is_flag=True,
