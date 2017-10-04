@@ -56,7 +56,8 @@ try:
     import dateutil.parser
     import colorama
     from colorama import Fore, Style
-    from github_release import get_releases, gh_asset_download, gh_asset_upload
+    from github_release import (get_releases, gh_asset_download,
+                                gh_asset_upload, gh_asset_delete)
 except ImportError, e:
     print 'Import error:', e
     print 'To run script install required packages with the next command:\n\n'\
@@ -163,11 +164,13 @@ class SignApp(object):
         """Get app settings from options, from curdir git, from config file"""
         ask_passphrase = kwargs.pop('ask_passphrase', None)
         self.sign_drafts = kwargs.pop('sign_drafts', False)
+        self.force = kwargs.pop('force', False)
+        self.tag_name = kwargs.pop('tag_name', None)
         self.repo = kwargs.pop('repo', None)
         self.token = kwargs.pop('token', None)
         self.keyid = kwargs.pop('keyid', None)
         self.count = kwargs.pop('count', None)
-        self.dry_run = kwargs.pop('dry_run', None)
+        self.dry_run = kwargs.pop('dry_run', False)
 
         if not self.repo:
             self.repo = check_github_repo()
@@ -267,7 +270,10 @@ class SignApp(object):
         with SHA256SUMS.txt.asc counterpart.
         """
         repo = self.repo
-        tag = release['tag_name']
+        tag = release.get('tag_name', None)
+        if not tag:
+            print 'Release have no tag name, skip release\n'
+            return
 
         with ChdirTemporaryDirectory():
             with open(SHA_FNAME, 'w') as fdw:
@@ -276,16 +282,24 @@ class SignApp(object):
                         continue
 
                     gh_asset_download(repo, tag, name)
-                    if not '%s.asc' % name in asc_names:
+                    if not '%s.asc' % name in asc_names or self.force:
                         self.sign_file_name(name)
+
+                        if self.force:
+                            gh_asset_delete(repo, tag, '%s.asc' % name,
+                                            dry_run=self.dry_run)
+
                         gh_asset_upload(repo, tag, '%s.asc' % name,
                                         dry_run=self.dry_run)
 
                     sumline = '%s %s\n' % (sha256_checksum(name), name)
                     fdw.write(sumline)
 
-            gh_asset_upload(repo, tag, SHA_FNAME, dry_run=self.dry_run)
             self.sign_file_name(SHA_FNAME, detach=False)
+
+            gh_asset_delete(repo, tag, '%s.asc' % SHA_FNAME,
+                            dry_run=self.dry_run)
+
             gh_asset_upload(repo, tag, '%s.asc' % SHA_FNAME,
                             dry_run=self.dry_run)
 
@@ -297,7 +311,14 @@ class SignApp(object):
         print '  With key: %s, %s\n' % (self.keyid, self.uid)
         releases = get_releases(self.repo)
 
-        if not self.sign_drafts:
+        if self.tag_name:
+            releases = [r for r in releases
+                        if r.get('tag_name', None) == self.tag_name]
+
+            if len(releases) == 0:
+                print 'No release with tag "%s" found, exit' % self.tag_name
+                sys.exit(1)
+        elif not self.sign_drafts:
             releases = [r for r in releases if not r.get('draft', False)]
 
         # cycle through releases sorted by by publication date
@@ -342,7 +363,7 @@ class SignApp(object):
             if not need_to_sign:
                 need_to_sign = '%s.asc' % SHA_FNAME not in asc_names
 
-            if need_to_sign:
+            if need_to_sign or self.force:
                 self.sign_release(r, other_names, asc_names)
             else:
                 print '  Seems already signed, skip release\n'
@@ -356,6 +377,10 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
               help='Number of recently published releases to sign')
 @click.option('-d', '--sign-drafts', is_flag=True,
               help='Sing draft releases first')
+@click.option('-f', '--force', is_flag=True,
+              help='Sing already signed releases')
+@click.option('-g', '--tag-name',
+              help='Sing only release tagged with tag name')
 @click.option('-k', '--keyid',
               help='gnupg keyid')
 @click.option('-n', '--dry-run', is_flag=True,
