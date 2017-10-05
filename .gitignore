@@ -97,3 +97,4 @@ electrum-dash
 /cython-hidapi/
 /python-trezor/
 /x11_hash/
+*dmg

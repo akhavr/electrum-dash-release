@@ -1,5 +1,5 @@
 #!/bin/bash
-BUILD_REPO_URL=https://github.com/dashpay/electrum-dash-old.git
+BUILD_REPO_URL=https://github.com/akhavr/electrum-dash.git
 
 if [[ -z $TRAVIS_TAG ]] || [[ $TRAVIS_TAG == develop ]]; then
   git clone $BUILD_REPO_URL electrum-dash
