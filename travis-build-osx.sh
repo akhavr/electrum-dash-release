@@ -1,5 +1,11 @@
 #!/bin/bash
-git clone https://github.com/akhavr/electrum-dash.git electrum-dash
+BUILD_REPO_URL=https://github.com/akhavr/electrum-dash.git
+
+if [[ -z $TRAVIS_TAG ]] || [[ $TRAVIS_TAG == develop ]]; then
+  git clone $BUILD_REPO_URL electrum-dash
+else
+  git clone --branch $TRAVIS_TAG $BUILD_REPO_URL electrum-dash
+fi
 cd electrum-dash
 
 protobuf_path=/usr/local/lib/python2.7/site-packages/google
